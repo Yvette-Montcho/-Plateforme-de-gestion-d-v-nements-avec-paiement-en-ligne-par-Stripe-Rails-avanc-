@@ -1,16 +1,6 @@
 # EventFreeka 🎉
 
-> Plateforme de gestion d'événements avec paiement en ligne par Stripe — projet Rails avancé (Services & API).
-
----
-
-## Nom du repository GitHub recommandé
-
-```
-eventfreeka-rails
-```
-
-> Simple, descriptif, en kebab-case (convention GitHub), et reflète à la fois le projet (EventFreeka) et le framework (Rails).
+> Plateforme de gestion d'événements avec paiement en ligne par Stripe - projet Rails avancé (Services & API).
 
 ---
 
@@ -235,16 +225,16 @@ heroku run rails db:migrate
 
 ## Technologies utilisées
 
-- **Ruby on Rails 7** — Framework MVC
-- **PostgreSQL** — Base de données relationnelle
-- **Devise** — Authentification utilisateur
-- **Stripe** — Paiement en ligne sécurisé
-- **Dotenv** — Gestion des variables d'environnement
-- **Bootstrap 5** — Interface utilisateur responsive
-- **Heroku** — Hébergement cloud
+- **Ruby on Rails 7** - Framework MVC
+- **PostgreSQL** - Base de données relationnelle
+- **Devise** - Authentification utilisateur
+- **Stripe** - Paiement en ligne sécurisé
+- **Dotenv** - Gestion des variables d'environnement
+- **Bootstrap 5** - Interface utilisateur responsive
+- **Heroku** - Hébergement cloud
 
 ---
 
 ## Licence
 
-Ce projet est réalisé dans un cadre éducatif — formation **Entreprendre dans la Tech** (ETP4A), Semaine 7, Jour 3.
+Ce projet est réalisé dans un cadre éducatif - formation **ETP4A** , Semaine 7, Jour 3.
