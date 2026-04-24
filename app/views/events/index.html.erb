@@ -1,0 +1,68 @@
+<%# app/views/events/index.html.erb — Page d'accueil listant tous les événements à venir %>
+<%# Affiche les événements sous forme de cartes Bootstrap %>
+
+<%# Titre de la page (injecté dans le layout via content_for) %>
+<% content_for :title, "Événements" %>
+
+<%# En-tête de la page avec titre et bouton de création %>
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="h2">🎉 Événements à venir</h1>
+
+  <%# Bouton de création visible uniquement pour les utilisateurs connectés %>
+  <% if user_signed_in? %>
+    <%= link_to "＋ Créer un événement", new_event_path, class: "btn btn-primary" %>
+  <% end %>
+</div>
+
+<%# Grille d'événements — 3 colonnes sur desktop, 1 sur mobile %>
+<div class="row row-cols-1 row-cols-md-3 g-4">
+  <% if @events.any? %>
+    <%# Itère sur chaque événement et affiche une carte %>
+    <% @events.each do |event| %>
+      <div class="col">
+        <div class="card h-100 shadow-sm">
+          <%# Corps de la carte %>
+          <div class="card-body">
+            <%# Titre de l'événement %>
+            <h5 class="card-title"><%= event.title %></h5>
+
+            <%# Date formatée en français %>
+            <p class="card-text text-muted">
+              📅 <%= l(event.starts_at, format: :long) %>
+            </p>
+
+            <%# Lieu de l'événement %>
+            <% if event.location.present? %>
+              <p class="card-text text-muted">📍 <%= event.location %></p>
+            <% end %>
+
+            <%# Prix avec badge coloré (vert = gratuit, bleu = payant) %>
+            <span class="badge <%= event.free? ? 'bg-success' : 'bg-primary' %>">
+              <%= event.formatted_price %>
+            </span>
+
+            <%# Nombre de participants %>
+            <span class="badge bg-secondary ms-1">
+              👥 <%= event.attendances.count %> participant(s)
+            </span>
+          </div>
+
+          <%# Pied de carte avec le lien vers le détail %>
+          <div class="card-footer bg-transparent">
+            <%= link_to "Voir l'événement →", event, class: "btn btn-outline-dark btn-sm w-100" %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <%# Message affiché si aucun événement n'est disponible %>
+    <div class="col-12">
+      <div class="text-center py-5 text-muted">
+        <p class="fs-4">Aucun événement à venir pour le moment.</p>
+        <% if user_signed_in? %>
+          <%= link_to "Soyez le premier à en créer un !", new_event_path, class: "btn btn-primary" %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>

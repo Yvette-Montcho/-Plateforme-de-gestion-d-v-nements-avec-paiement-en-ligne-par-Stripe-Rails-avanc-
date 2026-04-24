@@ -1,0 +1,27 @@
+# config/database.yml — Configuration de la connexion à la base de données PostgreSQL
+# Définit les paramètres de connexion pour chaque environnement (dev, test, prod)
+
+# Paramètres communs à tous les environnements (évite la répétition — DRY)
+default: &default
+  adapter: postgresql          # Adaptateur PostgreSQL
+  encoding: unicode            # Encodage UTF-8 pour les caractères spéciaux
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>  # Nombre max de connexions simultanées
+
+# === DÉVELOPPEMENT ===
+# Base de données locale utilisée lors du développement
+development:
+  <<: *default                 # Hérite des paramètres communs ci-dessus
+  database: eventfreeka_development  # Nom de la BDD de développement
+
+# === TEST ===
+# Base de données séparée pour les tests automatisés (vidée à chaque run)
+test:
+  <<: *default
+  database: eventfreeka_test   # Nom de la BDD de test (séparée du développement)
+
+# === PRODUCTION ===
+# En production (Heroku), l'URL complète est fournie par la variable DATABASE_URL
+production:
+  <<: *default
+  # Heroku fournit automatiquement DATABASE_URL — il suffit de le lire
+  url: <%= ENV['DATABASE_URL'] %>

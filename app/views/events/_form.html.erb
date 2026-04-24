@@ -1,0 +1,56 @@
+<%# app/views/events/_form.html.erb — Formulaire partagé pour créer et éditer un événement %>
+<%# Ce partial est utilisé par new.html.erb et edit.html.erb (DRY) %>
+
+<%# Affiche les erreurs de validation si le formulaire a été soumis avec des erreurs %>
+<% if event.errors.any? %>
+  <div class="alert alert-danger">
+    <strong>⚠️ <%= pluralize(event.errors.count, 'erreur') %> :</strong>
+    <ul class="mb-0">
+      <%# Liste tous les messages d'erreur de validation %>
+      <% event.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<%# Formulaire principal — simple_form génère automatiquement les classes Bootstrap %>
+<%= simple_form_for(event, html: { class: 'needs-validation' }) do |f| %>
+
+  <%# Titre de l'événement — champ texte obligatoire %>
+  <%= f.input :title,
+      label: "Titre de l'événement",
+      placeholder: "Ex: Soirée networking startup",
+      required: true %>
+
+  <%# Description — zone de texte multi-lignes %>
+  <%= f.input :description,
+      label: "Description",
+      as: :text,
+      input_html: { rows: 5 },
+      placeholder: "Décrivez votre événement en détail..." %>
+
+  <%# Lieu — champ texte optionnel %>
+  <%= f.input :location,
+      label: "Lieu",
+      placeholder: "Ex: 10 rue de la Paix, Paris" %>
+
+  <%# Date et heure — sélecteur datetime %>
+  <%= f.input :starts_at,
+      label: "Date et heure de début",
+      as: :datetime,
+      required: true %>
+
+  <%# Prix en centimes — entier, 0 = gratuit %>
+  <%= f.input :price,
+      label: "Prix (en centimes, 0 = gratuit)",
+      placeholder: "Ex: 1000 pour 10€",
+      hint: "Entrez 0 pour un événement gratuit. Sinon, entrez le montant en centimes (1000 = 10€).",
+      input_html: { min: 0, step: 1 },
+      required: true %>
+
+  <%# Bouton de soumission du formulaire %>
+  <div class="d-grid mt-4">
+    <%= f.submit "Enregistrer l'événement", class: "btn btn-primary btn-lg" %>
+  </div>
+<% end %>

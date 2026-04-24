@@ -1,0 +1,19 @@
+<%# app/views/events/new.html.erb — Page de création d'un événement %>
+<%# Utilise le partial _form.html.erb pour le formulaire %>
+
+<%# Titre de la page %>
+<% content_for :title, "Créer un événement" %>
+
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <h1 class="mb-4">🎉 Créer un événement</h1>
+
+    <%# Inclut le formulaire partagé — passe l'instance @event %>
+    <%= render 'form', event: @event %>
+
+    <%# Lien retour %>
+    <div class="mt-3 text-center">
+      <%= link_to "Annuler", events_path, class: "btn btn-outline-secondary" %>
+    </div>
+  </div>
+</div>

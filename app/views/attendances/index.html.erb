@@ -1,0 +1,112 @@
+<%# app/views/attendances/index.html.erb — Espace organisateur : liste des participants %>
+<%# Accessible uniquement par le créateur de l'événement (protégé par before_action) %>
+
+<%# Titre de la page %>
+<% content_for :title, "Participants — #{@event.title}" %>
+
+<h1 class="mb-1">⚙️ Mon espace événement</h1>
+<h2 class="h4 text-muted mb-4"><%= @event.title %></h2>
+
+<%# Boutons d'action pour l'organisateur %>
+<div class="d-flex gap-2 mb-4">
+  <%# Lien vers la modification de l'événement %>
+  <%= link_to "✏️ Modifier l'événement", edit_event_path(@event), class: "btn btn-outline-primary" %>
+
+  <%# Retour à la page de l'événement %>
+  <%= link_to "← Voir l'événement", @event, class: "btn btn-outline-secondary" %>
+</div>
+
+<%# Statistiques de l'événement %>
+<div class="row mb-4">
+  <%# Nombre de participants %>
+  <div class="col-md-4">
+    <div class="card text-center shadow-sm">
+      <div class="card-body">
+        <h3 class="display-4"><%= @attendances.count %></h3>
+        <p class="text-muted">Participant(s)</p>
+      </div>
+    </div>
+  </div>
+
+  <%# Recettes totales (somme des montants payés) %>
+  <div class="col-md-4">
+    <div class="card text-center shadow-sm">
+      <div class="card-body">
+        <h3 class="display-4"><%= (@attendances.sum(:amount_paid) / 100.0).round(2) %>€</h3>
+        <p class="text-muted">Recettes totales</p>
+      </div>
+    </div>
+  </div>
+
+  <%# Prix de l'événement %>
+  <div class="col-md-4">
+    <div class="card text-center shadow-sm">
+      <div class="card-body">
+        <h3 class="display-4"><%= @event.formatted_price %></h3>
+        <p class="text-muted">Prix par place</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%# Liste des participants sous forme de tableau %>
+<div class="card shadow-sm">
+  <div class="card-header">
+    <h5 class="mb-0">👥 Liste des participants</h5>
+  </div>
+
+  <% if @attendances.any? %>
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-dark">
+          <tr>
+            <th>#</th>
+            <th>Email</th>
+            <th>Date d'inscription</th>
+            <th>Montant payé</th>
+            <th>ID Stripe</th>
+          </tr>
+        </thead>
+        <tbody>
+          <%# Itère sur chaque participation et affiche ses données %>
+          <% @attendances.each_with_index do |attendance, index| %>
+            <tr>
+              <%# Numéro de ligne (index + 1 pour commencer à 1) %>
+              <td><%= index + 1 %></td>
+
+              <%# Email du participant %>
+              <td><%= attendance.user.email %></td>
+
+              <%# Date d'inscription formatée %>
+              <td><%= l(attendance.created_at, format: :short) %></td>
+
+              <%# Montant payé (convertit les centimes en euros) %>
+              <td>
+                <% if attendance.amount_paid > 0 %>
+                  <%= (attendance.amount_paid / 100.0).round(2) %>€
+                <% else %>
+                  <span class="badge bg-success">Gratuit</span>
+                <% end %>
+              </td>
+
+              <%# Identifiant Stripe de la transaction (tronqué pour la lisibilité) %>
+              <td>
+                <% if attendance.stripe_charge_id.present? %>
+                  <code class="small text-muted"><%= attendance.stripe_charge_id.truncate(20) %></code>
+                <% else %>
+                  <span class="text-muted">—</span>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <%# Message si aucun participant n'est inscrit %>
+    <div class="card-body text-center text-muted py-5">
+      <p>Aucun participant inscrit pour le moment.</p>
+      <p class="small">Partagez le lien de l'événement pour attirer des participants !</p>
+    </div>
+  <% end %>
+</div>

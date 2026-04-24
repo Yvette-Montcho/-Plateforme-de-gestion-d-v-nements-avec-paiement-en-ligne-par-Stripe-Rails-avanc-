@@ -1,0 +1,140 @@
+<%# app/views/attendances/new.html.erb — Formulaire d'inscription à un événement %>
+<%# Pour les événements payants : affiche le checkout Stripe %>
+<%# Pour les événements gratuits : affiche un simple bouton de confirmation %>
+
+<%# Titre de la page %>
+<% content_for :title, "Rejoindre #{@event.title}" %>
+
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <h1 class="mb-2">🎟️ Rejoindre l'événement</h1>
+    <h2 class="h4 text-muted mb-4"><%= @event.title %></h2>
+
+    <%# Récapitulatif de l'événement %>
+    <div class="card mb-4">
+      <div class="card-body">
+        <p>📅 <%= l(@event.starts_at, format: :long) %></p>
+        <% if @event.location.present? %>
+          <p>📍 <%= @event.location %></p>
+        <% end %>
+        <p>
+          💶 <strong>Montant à payer :</strong>
+          <span class="badge <%= @event.free? ? 'bg-success' : 'bg-primary' %> fs-6">
+            <%= @event.formatted_price %>
+          </span>
+        </p>
+      </div>
+    </div>
+
+    <% if @event.free? %>
+      <%# ===== ÉVÉNEMENT GRATUIT ===== %>
+      <%# Pas de paiement nécessaire — simple formulaire de confirmation %>
+      <div class="alert alert-success">
+        ✅ Cet événement est <strong>gratuit</strong> ! Confirmez simplement votre inscription.
+      </div>
+
+      <%# Formulaire POST simple sans champ Stripe %>
+      <%= form_with url: event_attendances_path(@event), method: :post do |f| %>
+        <div class="d-grid">
+          <%= f.submit "✅ Confirmer mon inscription gratuite", class: "btn btn-success btn-lg" %>
+        </div>
+      <% end %>
+
+    <% else %>
+      <%# ===== ÉVÉNEMENT PAYANT ===== %>
+      <%# Formulaire avec le widget de paiement Stripe %>
+      <div class="alert alert-info">
+        💳 Veuillez entrer vos coordonnées bancaires pour finaliser votre inscription.
+      </div>
+
+      <%# Formulaire POST — Stripe.js intercepte la soumission pour tokeniser la carte %>
+      <%# L'action pointe vers la création de la participation %>
+      <%= form_tag event_attendances_path(@event), id: 'payment-form' do %>
+        <%# Conteneur du widget de paiement Stripe (Elements) %>
+        <div class="mb-3">
+          <label class="form-label fw-bold">Coordonnées bancaires</label>
+          <%# Stripe.js injecte ici son formulaire de saisie sécurisée de carte %>
+          <div id="card-element" class="form-control" style="padding: 12px;">
+            <%# Stripe.js injecte ses champs ici au chargement de la page %>
+          </div>
+          <%# Zone d'affichage des erreurs Stripe (numéro invalide, etc.) %>
+          <div id="card-errors" class="text-danger mt-1" role="alert"></div>
+        </div>
+
+        <%# Bouton de paiement — désactivé pendant le traitement pour éviter les doubles clics %>
+        <div class="d-grid">
+          <button id="submit-button" class="btn btn-primary btn-lg" type="submit">
+            💳 Payer <%= @event.formatted_price %> et s'inscrire
+          </button>
+        </div>
+      <% end %>
+
+      <%# ===== SCRIPT STRIPE.JS ===== %>
+      <%# Charge le script Stripe depuis leurs serveurs CDN (obligatoire pour la conformité PCI) %>
+      <script src="https://js.stripe.com/v3/"></script>
+      <script>
+        // Initialise Stripe avec la clé publique (sans risque d'exposition)
+        const stripe = Stripe('<%= @stripe_publishable_key %>');
+
+        // Crée une instance "Elements" pour le formulaire de carte
+        const elements = stripe.elements();
+
+        // Crée l'élément de saisie de carte avec un style custom
+        const cardElement = elements.create('card', {
+          style: {
+            base: {
+              fontSize: '16px',        // Taille de police lisible
+              color: '#32325d',        // Couleur du texte
+              fontFamily: 'Arial, sans-serif',
+              '::placeholder': { color: '#aab7c4' }  // Couleur du placeholder
+            },
+            invalid: { color: '#fa755a' }  // Couleur en cas d'erreur de saisie
+          }
+        });
+
+        // Monte l'élément de carte dans le div #card-element du DOM
+        cardElement.mount('#card-element');
+
+        // Écoute les changements dans le champ carte pour afficher les erreurs en temps réel
+        cardElement.on('change', function(event) {
+          const displayError = document.getElementById('card-errors');
+          displayError.textContent = event.error ? event.error.message : '';
+        });
+
+        // Intercepte la soumission du formulaire
+        const form = document.getElementById('payment-form');
+        form.addEventListener('submit', async function(event) {
+          event.preventDefault();  // Empêche la soumission normale du formulaire
+
+          // Désactive le bouton pour éviter les doubles soumissions
+          document.getElementById('submit-button').disabled = true;
+
+          // Crée un token Stripe à partir des données de la carte
+          // Ce token remplace les données sensibles de la carte (jamais envoyées à notre serveur)
+          const { token, error } = await stripe.createToken(cardElement);
+
+          if (error) {
+            // Affiche l'erreur Stripe dans la zone prévue
+            document.getElementById('card-errors').textContent = error.message;
+            document.getElementById('submit-button').disabled = false;
+          } else {
+            // Injecte le token dans le formulaire sous forme de champ caché
+            const hiddenInput = document.createElement('input');
+            hiddenInput.setAttribute('type', 'hidden');
+            hiddenInput.setAttribute('name', 'stripeToken');  // Nom récupéré dans le contrôleur
+            hiddenInput.setAttribute('value', token.id);
+            form.appendChild(hiddenInput);
+
+            // Soumet le formulaire avec le token Stripe
+            form.submit();
+          }
+        });
+      </script>
+    <% end %>
+
+    <%# Lien retour vers l'événement %>
+    <div class="mt-3">
+      <%= link_to "← Retour à l'événement", @event, class: "btn btn-outline-secondary" %>
+    </div>
+  </div>
+</div>

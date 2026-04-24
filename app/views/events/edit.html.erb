@@ -1,0 +1,33 @@
+<%# app/views/events/edit.html.erb — Page de modification d'un événement (organisateur uniquement) %>
+<%# Réutilise le partial _form.html.erb (même formulaire que new) %>
+
+<%# Titre de la page dynamique avec le nom de l'événement %>
+<% content_for :title, "Modifier #{@event.title}" %>
+
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <h1 class="mb-4">✏️ Modifier l'événement</h1>
+
+    <%# Inclut le formulaire partagé — passe @event déjà persisté %>
+    <%= render 'form', event: @event %>
+
+    <%# Zone de danger : suppression de l'événement %>
+    <div class="mt-4 pt-4 border-top">
+      <h5 class="text-danger">Zone de danger</h5>
+      <p class="text-muted small">La suppression est irréversible et supprimera également toutes les participations.</p>
+
+      <%# Bouton de suppression avec confirmation JavaScript %>
+      <%= link_to "🗑️ Supprimer cet événement", @event,
+          data: {
+            turbo_method: :delete,
+            turbo_confirm: "Êtes-vous CERTAIN de vouloir supprimer « #{@event.title} » ? Cette action est irréversible."
+          },
+          class: "btn btn-outline-danger" %>
+    </div>
+
+    <%# Lien retour vers l'événement %>
+    <div class="mt-3">
+      <%= link_to "← Retour à l'événement", @event, class: "btn btn-outline-secondary" %>
+    </div>
+  </div>
+</div>

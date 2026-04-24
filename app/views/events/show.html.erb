@@ -1,0 +1,91 @@
+<%# app/views/events/show.html.erb — Page de détail d'un événement %>
+<%# Affiche toutes les informations de l'événement et les boutons contextuels %>
+
+<%# Titre de la page dynamique avec le nom de l'événement %>
+<% content_for :title, @event.title %>
+
+<div class="row">
+  <%# Colonne principale : détails de l'événement %>
+  <div class="col-md-8">
+    <h1><%= @event.title %></h1>
+
+    <%# Informations clés de l'événement %>
+    <div class="mb-3 text-muted">
+      <%# Date et heure de l'événement %>
+      <p>📅 <strong>Date :</strong> <%= l(@event.starts_at, format: :long) %></p>
+
+      <%# Lieu (affiché uniquement s'il est renseigné) %>
+      <% if @event.location.present? %>
+        <p>📍 <strong>Lieu :</strong> <%= @event.location %></p>
+      <% end %>
+
+      <%# Prix avec formatage lisible %>
+      <p>
+        💶 <strong>Prix :</strong>
+        <span class="badge <%= @event.free? ? 'bg-success' : 'bg-primary' %> fs-6">
+          <%= @event.formatted_price %>
+        </span>
+      </p>
+
+      <%# Organisateur de l'événement %>
+      <p>👤 <strong>Organisateur :</strong> <%= @event.user.email %></p>
+    </div>
+
+    <%# Description complète de l'événement (simple_format conserve les sauts de ligne) %>
+    <% if @event.description.present? %>
+      <h4>Description</h4>
+      <div class="card card-body bg-light mb-4">
+        <%= simple_format(@event.description) %>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Colonne latérale : actions contextuelles selon le rôle de l'utilisateur %>
+  <div class="col-md-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Participer</h5>
+
+        <%# === BOUTONS CONTEXTUELS === %>
+
+        <% if user_signed_in? %>
+          <% if current_user.organizer_of?(@event) %>
+            <%# L'utilisateur est l'organisateur : affiche les outils de gestion %>
+            <p class="text-success fw-bold">✅ Vous êtes l'organisateur</p>
+
+            <%# Lien vers l'espace de gestion (liste des participants) %>
+            <%= link_to "⚙️ Mon espace événement", event_attendances_path(@event),
+                class: "btn btn-outline-primary w-100 mb-2" %>
+
+          <% elsif current_user.attending?(@event) %>
+            <%# L'utilisateur est déjà inscrit %>
+            <p class="text-success fw-bold">✅ Vous êtes inscrit !</p>
+
+            <%# Option de désinscription %>
+            <%= link_to "Se désinscrire", event_attendance_path(@event, @event.attendances.find_by(user: current_user)),
+                data: { turbo_method: :delete, turbo_confirm: "Êtes-vous sûr de vouloir vous désinscrire ?" },
+                class: "btn btn-outline-danger btn-sm w-100" %>
+
+          <% else %>
+            <%# L'utilisateur peut rejoindre l'événement %>
+            <p class="text-muted"><%= pluralize(@event.attendances.count, 'participant') %></p>
+
+            <%# Bouton "Rejoindre" — redirige vers le formulaire d'inscription %>
+            <%= link_to "🎟️ Rejoindre l'événement", new_event_attendance_path(@event),
+                class: "btn btn-primary w-100" %>
+          <% end %>
+
+        <% else %>
+          <%# Visiteur non connecté : invite à se connecter %>
+          <p class="text-muted">Connectez-vous pour rejoindre cet événement.</p>
+          <%= link_to "Se connecter", new_user_session_path, class: "btn btn-outline-primary w-100" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%# Lien retour vers la liste des événements %>
+<div class="mt-4">
+  <%= link_to "← Retour aux événements", events_path, class: "btn btn-outline-secondary" %>
+</div>
